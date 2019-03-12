@@ -10,31 +10,40 @@ void app_drawcol(uint16_t c);
 
 void app_main(void)
 {
+	printf("app_main:nvs_flash_init()\n");
 	nvs_flash_init();
+	printf("app_main:odroid_system_init()\n");
 	odroid_system_init();
+	printf("app_main:video_init()\n");
 	video_init();
+	printf("app_main:odroid_input_gamepad_init()\n");
 	odroid_input_gamepad_init();
+	printf("app_main:odroid_input_battery_level_init()\n");
 	odroid_input_battery_level_init();
 
 	while (true)
 	{
+		printf("app_main:odroid_input_gamepad_read()\n");
 		odroid_input_gamepad_read(&pad_state);
+
+		uint16_t c = 0xFFFF;
 
 		if( pad_state.values[ODROID_INPUT_UP] )
 		{
-			app_drawcol(0xFF00);
+			printf("app_main:UP pressed\n");
+			c = 0xFF00;
 		}
 		if( pad_state.values[ODROID_INPUT_A] )
 		{
-			app_drawcol(0x0FF0);
+			printf("app_main:A pressed\n");
+			c = 0x0FF0;
 		}
 		if( pad_state.values[ODROID_INPUT_B] )
 		{
-			app_drawcol(0x00FF);
+			printf("app_main:B pressed\n");
+			c = 0x00FF;
 		}
-
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-		app_drawcol(0xFFFF);
+		app_drawcol(c);
 	}
 
 	video_deinit();
