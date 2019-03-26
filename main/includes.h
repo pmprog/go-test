@@ -27,9 +27,4 @@
 #include "../components/odroid/odroid_settings.h"
 #include "../components/odroid/odroid_audio.h"
 
-
-void video_init();
-void video_deinit();
-int16_t video_getpixel(int x, int y);
-void video_setpixel(int x, int y, int16_t c);
-
+//#include "../components/ugui/ugui.h"

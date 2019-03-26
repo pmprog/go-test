@@ -1042,43 +1042,22 @@ ili9341_write_frame_8bit(uint8_t* buffer, odroid_scanline *diff,
     odroid_display_unlock();
 }
 
-// void ili9341_write_frame(uint16_t* buffer)
-// {
-//     short x, y;
-//
-//     //xTaskToNotify = xTaskGetCurrentTaskHandle();
-//
-//     if (buffer == NULL)
-//     {
-//         // clear the buffer
-//         memset(line[0], 0x00, 320 * sizeof(uint16_t));
-//
-//         // clear the screen
-//         send_reset_drawing(0, 0, 320, 240);
-//
-//         for (y = 0; y < 240; ++y)
-//         {
-//             send_continue_line(line[0], 320, 1);
-//         }
-//
-//         send_continue_wait();
-//     }
-//     else
-//     {
-//         const int displayWidth = 320;
-//         const int displayHeight = 240;
-//
-//
-//         send_reset_drawing(0, 0, displayWidth, displayHeight);
-//
-//         for (y = 0; y < displayHeight; y += 4)
-//         {
-//             send_continue_line(buffer + y * displayWidth, displayWidth, 4);
-//         }
-//
-//         send_continue_wait();
-//     }
-// }
+void ili9341_write_frame(uint16_t* buffer)
+{
+    const int displayWidth = 320;
+    const int displayHeight = 240;
+    
+    send_reset_drawing(0, 0, displayWidth, displayHeight);
+    for (short y = 0; y < displayHeight; y += 4)
+    {
+        uint16_t* line_buffer = line_buffer_get();
+        for(short x = 0; x < 320 * 4; x++)
+        {
+            line_buffer[x] = buffer[(y * displayWidth) + x];
+        }
+        send_continue_line(line_buffer, 320, 4);
+    }
+}
 
 void ili9341_write_frame_rectangle(short left, short top, short width, short height, uint16_t* buffer)
 {

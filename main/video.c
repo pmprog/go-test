@@ -1,9 +1,10 @@
 
-#include "includes.h"
+#include "video.h"
 
 void video_task(void* arg);
 
 uint16_t* video_buffer;
+uint16_t* video_pokevalue;
 
 QueueHandle_t video_queue;
 volatile bool video_running = false;
@@ -36,50 +37,84 @@ void video_init()
 
 void video_deinit()
 {
-	uint16_t* param = 1;
-	xQueueSend(video_queue, &param, portMAX_DELAY);
+	video_pokevalue = 1;
+	xQueueSend(video_queue, &video_pokevalue, portMAX_DELAY);
 	while( video_running )
 	{
 	}
 	free(video_buffer);
 }
 
-int16_t video_getpixel(int x, int y)
+IRAM_ATTR uint16_t video_rgbtoi16(uint8_t r, uint8_t g, uint8_t b)
 {
-	return video_buffer[(y * 320) + x];
+	uint16_t rx = ((uint16_t)r & (uint16_t)0x00f8) << 8;
+	uint16_t gx = ((uint16_t)g & (uint16_t)0x00fc) << 3;
+	uint16_t bx = ((uint16_t)b & (uint16_t)0x00f8) >> 3;
+	//return ((rx | gx | bx) << 8) | ((rx | gx | bx) >> 8);
+	return (rx | gx | bx);
 }
 
-void video_setpixel(int x, int y, int16_t c)
+IRAM_ATTR void video_i16torgb(uint16_t colour, uint8_t* r, uint8_t* g, uint8_t* b)
 {
-	printf("video_task:setpixel(%d,%d,%d)\n",x,y,c);
-	video_buffer[(y * 320) + x] = c;
+	uint16_t swapped = colour; // (colour >> 8) | (colour << 8);
+	*r = (swapped & 0xf800) >> 8;
+	*g = (swapped & 0x07e0) >> 5;
+	*b = (swapped & 0x001f) << 3;
 }
 
-void video_task(void* arg)
+IRAM_ATTR void video_getpixel(int x, int y, uint8_t* r, uint8_t* g, uint8_t* b)
+{
+	video_i16torgb( video_buffer[(y * 320) + x], r, g, b );
+}
+
+IRAM_ATTR void video_setpixel(int x, int y, uint8_t r, uint8_t g, uint8_t b)
+{
+	video_buffer[(y * 320) + x] = video_rgbtoi16(r, g, b);
+}
+
+IRAM_ATTR void video_task(void* arg)
 {
 	printf("video_task:task start\n");
 	uint16_t* param = 0;
 	bool abort = false;
+	int rowrender = 0;
+	int rendermode = 0;
+
 	video_running = true;
 
 	printf("video_task:loop start\n");
 	while(!abort)
 	{
-		printf("video_task:queuepeek\n");
+		param = 0;
+		//xQueuePeek(video_queue, &param, portMAX_DELAY);
 		xQueuePeek(video_queue, &param, 1);
 		if( param == 1 )
 		{
-			printf("video_task:queueshutdown\n");
+			printf("video_task: poked(1)\n");
 			abort = true;
-			xQueueReceive(video_queue, &param, portMAX_DELAY);
-		} else {
-			printf("video_task:drawframe\n");
-			odroid_display_lock();
-			ili9341_write_frame_rectangleLE(0, 0, 320, 240, video_buffer);
-			odroid_display_unlock();
 		}
+		if( param == 2 )
+		{
+			// rendermode = 1 - rendermode;
+			printf("video_task: poked(2)\n");
+			ili9341_write_frame_rectangleLE( 0, 0, 320, 240, video_buffer );
+		}
+		/*
+		odroid_display_lock();
+		ili9341_write_frame( video_buffer );
+		odroid_display_unlock();
+		*/
+		
+		xQueueReceive(video_queue, &param, 1);
 	}
 
 	vTaskDelete(NULL);
 	video_running = false;
+}
+
+IRAM_ATTR void video_poke(uint16_t value)
+{
+	printf("video_poke:%d\n", (int)value);
+	video_pokevalue = (uint16_t)value;
+	xQueueSend(video_queue, &video_pokevalue, portMAX_DELAY);
 }
