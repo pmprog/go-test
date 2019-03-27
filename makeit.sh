@@ -3,6 +3,7 @@
 echo "Removing previous build"
 rm build/odroid-go-common.bin
 rm marqtest.fw
+rm /media/sf_Transfer/marqtest.fw
 
 echo "Compiling Source"
 make -j4 all
@@ -17,5 +18,6 @@ if [ -f build/odroid-go-common.bin ]; then
 	../odroid-go-firmware/tools/mkfw/mkfw "MarqTest" tile.raw 0 16 1048576 test build/odroid-go-common.bin
 	mv firmware.fw marqtest.fw
 
+	cp marqtest.fw /media/sf_Transfer/marqtest.fw
 	echo "Compilation Complete"
 fi

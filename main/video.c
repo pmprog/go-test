@@ -85,19 +85,24 @@ IRAM_ATTR void video_task(void* arg)
 	printf("video_task:loop start\n");
 	while(!abort)
 	{
-		param = 0;
+		param = 1111;
 		//xQueuePeek(video_queue, &param, portMAX_DELAY);
 		xQueuePeek(video_queue, &param, 1);
-		if( param == 1 )
+		if( param == 999 )
 		{
-			printf("video_task: poked(1)\n");
+			printf("video_task: poked(999)\n");
 			abort = true;
 		}
-		if( param == 2 )
+		if( param == 888 )
 		{
 			// rendermode = 1 - rendermode;
-			printf("video_task: poked(2)\n");
+			printf("video_task: poked(888)\n");
 			ili9341_write_frame_rectangleLE( 0, 0, 320, 240, video_buffer );
+		}
+		if( param < 240 )
+		{
+			short y = (short)param;
+			ili9341_write_frame_rectangleLE( 0, y, 320, 1, video_buffer + (y * 320 * 2) );
 		}
 		/*
 		odroid_display_lock();

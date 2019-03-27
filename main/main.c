@@ -18,8 +18,12 @@ IRAM_ATTR void app_drawcol(uint8_t r, uint8_t g, uint8_t b)
 	px = (px + 1) % 320;
 	if( px == 0 )
 	{
+		//video_poke(py);
 		py = (py + 1) % 240;
-		video_poke(2);
+		if( py == 0 ) 
+		{
+			video_poke(888);
+		}
 	}
 	
 }
@@ -44,45 +48,47 @@ void app_main(void)
 	odroid_input_gamepad_read(&pad_pstate);
 	while (true)
 	{
-		odroid_input_gamepad_read(&pad_state);
+		if( px == 0 )
+		{
+			odroid_input_gamepad_read(&pad_state);
 
-		if( pad_state.values[ODROID_INPUT_UP] && !pad_pstate.values[ODROID_INPUT_UP] )
-		{
-			printf("app_main:UP pressed\n");
-			r = min( r+4, 255 );
-		}
-		if( pad_state.values[ODROID_INPUT_DOWN] && !pad_pstate.values[ODROID_INPUT_DOWN] )
-		{
-			printf("app_main:DOWN pressed\n");
-			r = max( r-4, 0 );
-		}
-		if( pad_state.values[ODROID_INPUT_LEFT] && !pad_pstate.values[ODROID_INPUT_LEFT] )
-		{
-			printf("app_main:LEFT pressed\n");
-			g = max( g-4, 0 );
-		}
-		if( pad_state.values[ODROID_INPUT_RIGHT] && !pad_pstate.values[ODROID_INPUT_RIGHT] )
-		{
-			printf("app_main:RIGHT pressed\n");
-			g = min( g+4, 255 );
-		}
-		if( pad_state.values[ODROID_INPUT_A] && !pad_pstate.values[ODROID_INPUT_A] )
-		{
-			printf("app_main:A pressed\n");
-			b = min( b+4, 255 );
-		}
-		if( pad_state.values[ODROID_INPUT_B] && !pad_pstate.values[ODROID_INPUT_B] )
-		{
-			printf("app_main:B pressed\n");
-			b = max( b-4, 0 );
-		}
+			if( pad_state.values[ODROID_INPUT_UP] ) // && !pad_pstate.values[ODROID_INPUT_UP] )
+			{
+				printf("app_main:UP pressed\n");
+				r = min( r+1, 255 );
+			}
+			if( pad_state.values[ODROID_INPUT_DOWN] ) // && !pad_pstate.values[ODROID_INPUT_DOWN] )
+			{
+				printf("app_main:DOWN pressed\n");
+				r = max( r-1, 0 );
+			}
+			if( pad_state.values[ODROID_INPUT_LEFT] ) // && !pad_pstate.values[ODROID_INPUT_LEFT] )
+			{
+				printf("app_main:LEFT pressed\n");
+				g = max( g-1, 0 );
+			}
+			if( pad_state.values[ODROID_INPUT_RIGHT] ) // && !pad_pstate.values[ODROID_INPUT_RIGHT] )
+			{
+				printf("app_main:RIGHT pressed\n");
+				g = min( g+1, 255 );
+			}
+			if( pad_state.values[ODROID_INPUT_A] ) // && !pad_pstate.values[ODROID_INPUT_A] )
+			{
+				printf("app_main:A pressed\n");
+				b = min( b+1, 255 );
+			}
+			if( pad_state.values[ODROID_INPUT_B] ) // && !pad_pstate.values[ODROID_INPUT_B] )
+			{
+				printf("app_main:B pressed\n");
+				b = max( b-1, 0 );
+			}
 
-		if( pad_state.values[ODROID_INPUT_MENU] && !pad_pstate.values[ODROID_INPUT_MENU] )
-		{
-			printf("app_main:MENU pressed\n");
-			video_poke( 2 );
+			if( pad_state.values[ODROID_INPUT_MENU] ) // && !pad_pstate.values[ODROID_INPUT_MENU] )
+			{
+				printf("app_main:MENU pressed\n");
+				video_poke( 2 );
+			}
 		}
-
 		app_drawcol(r, g, b);
 
 		pad_pstate = pad_state;	// Copy pad state
