@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Test commit
+
 echo "Removing previous build"
 rm build/odroid-go-common.bin
 rm marqtest.fw
